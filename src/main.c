@@ -18,7 +18,7 @@ char *get_word(char *end) {
             word[size] = '\0';
             *end = ch;
         }
-        else 
+        else
             word[size] = ch;
         size++;
     } while (!(*end));
@@ -72,7 +72,7 @@ void free_list(char ***list) {
 int redirect(char **cmd) {
     int i;
     for (i = 0; cmd[i] != NULL; i++)
-        if (!strcmp(cmd[i], ">") || !strcmp(cmd[i], "<")) 
+        if (!strcmp(cmd[i], ">") || !strcmp(cmd[i], "<"))
             break;
     if (cmd[i] == NULL)
         return -1;
@@ -81,7 +81,7 @@ int redirect(char **cmd) {
     if (!strcmp(cmd[i], ">")) {
         fd = open(cmd[i+1], O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
         stream = 1;
-    } 
+    }
     else if (!strcmp(cmd[i], "<")) {
         stream = 0;
         fd = open(cmd[i+1], O_RDONLY);
@@ -105,12 +105,12 @@ void exec_cmd(char **cmd) {
         close(fd);
 }
 
-/*
+//
 void exec_with_pipes(char ***list, int pipes) {
     pid_t pid;
     int fd = -1;
     int (*pipefd)[2] = malloc(sizeof(int[2]) * (pipes - 1));
-            for (int i = 0; pipes; i++) {
+            for (int i = 0; i < pipes; i++) {
                 if (i != pipes - 1)
                     pipe(pipefd[i]);
 
@@ -128,7 +128,7 @@ void exec_with_pipes(char ***list, int pipes) {
                         close(pipefd[j][0]);
                         close(pipefd[j][1]);
                     }
-                    if (execvp(list[i][0], list[0]) < 0) {
+                    if (execvp(list[i][0], list[i]) < 0) {
                         free_list(list);
                         perror("exec failed");
                         close(fd);
@@ -143,24 +143,24 @@ void exec_with_pipes(char ***list, int pipes) {
                 }
                 wait(NULL);
             }
-            if (fd > -1)
+            if (fd != 0 && fd != 1)
                 close(fd);
             free(pipefd);
 }
-*/
+//
 
 int main(int argc, char **argv) {
     int pipes;
     char ***list = get_cmd(&pipes);
     pid_t pid;
-    while (strcmp(list[0][0], "quit") && strcmp(list[0][0], "exit")) { 
+    while (strcmp(list[0][0], "quit") && strcmp(list[0][0], "exit")) {
         if (pipes > 1) {
-            //exec_with_pipes(list, pipes);
+            exec_with_pipes(list, pipes);
         }
         else {
             if ((pid = fork()) > 0) {
                 wait(NULL);
-            } 
+            }
             else {
                 exec_cmd(list[0]);
                 return 0;
